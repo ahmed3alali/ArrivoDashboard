@@ -1,0 +1,120 @@
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
+import logo from "../pictures/ArrivoLogo.webp"
+import { gql, useMutation } from "@apollo/client";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../adminAuth/UserContext"
+import { t } from "i18next";
+
+
+const TOKEN_AUTH = gql`
+  mutation TokenAuth($input: ObtainJSONWebTokenInput!) {
+    tokenAuth(input: $input) {
+      token
+    }
+  }
+`;
+
+
+
+
+export default function LoginForm() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [tempLoading, setTempLoading] = useState(false);
+  const [tempError, settempError] = useState("");
+  const [tokenAuth, { loading, error, data }] = useMutation(TOKEN_AUTH);
+
+  const navigate = useNavigate();
+  const { setUser } = useUser(); 
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  settempError("");
+  setTempLoading(true);
+
+  try {
+    const response = await tokenAuth({
+      variables: {
+        input: { username, password },
+      },
+    });
+    setTempLoading(false);
+
+    const token = response.data.tokenAuth.token;
+    localStorage.setItem("authToken", token);
+
+    // Set user in context and localStorage (you can customize this)
+    setUser({ name: username, email: "" });
+    localStorage.setItem("userName", username);
+    localStorage.setItem("userEmail", ""); // if you have email, add here
+
+    alert("Login successful!");
+    navigate("/");
+  } catch (err) {
+    setTempLoading(false);
+    console.error("Login error", err);
+    settempError("Invalid credentials. Please try again.");
+  }
+};
+
+
+  return (
+    <div className="min-h-screen flex flex-col sm:flex-col md:flex-row  xl:flex-row items-center justify-center gap-8 bg-gray-100 dark:bg-gray-900 p-4">
+<div className="logo-Container">
+<img src={logo}></img>
+
+</div>
+
+      <Card className="w-full max-w-md shadow-2xl border-none rounded-3xl">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl">{t("Login")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="username">{t("Username")}</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder={t("EnterUser")}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="password">{t("Password")}</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            {error && <p className="text-red-500 text-sm">{tempError}</p>}
+
+            <Button
+              type="submit"
+              className={cn("w-full", loading && "opacity-70 cursor-not-allowed")}
+              disabled={loading}
+            > 
+              {loading ? "Signing in..." : t("SignIn")}
+            </Button>
+
+           
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
