@@ -3,6 +3,10 @@ import { gql, useQuery } from "@apollo/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sidebar } from "@/components/Sidebar";
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import LoaderExternal from "@/components/ui/Loader";
+import NoItemsPage from "@/components/ui/NoItemsPage";
 
 const GET_TRIP_SUB_TYPES = gql`
   query GetTripSubTypes($first: Int = 10) {
@@ -19,21 +23,32 @@ const GET_TRIP_SUB_TYPES = gql`
 export default function TripSubTypesPage() {
   const { data, loading, error } = useQuery(GET_TRIP_SUB_TYPES);
   const [collapsed, setCollapsed] = React.useState(false);
+  const[sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <>
+    <DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
+    
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
       <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
         {loading && (
-          <div className="flex items-center m-auto w-56 justify-center min-h-screen">
-            <ProgressLogic />
-          </div>
+     
+        <LoaderExternal/>
+     
         )}
 
         {error && (
-          <p className="text-red-500">Error loading trip sub-types: {error.message}</p>
+     <ErrorMessage message={error.message}></ErrorMessage>
         )}
+
+
+
+ 
+
 
         {!loading && !error && data?.tripSubTypes?.edges?.length > 0 && (
           <>
@@ -51,6 +66,7 @@ export default function TripSubTypesPage() {
           </>
         )}
       </div>
+      {data?.tripSubTypes?.edges?.length === 0 && <NoItemsPage/>}
     </>
   );
 }

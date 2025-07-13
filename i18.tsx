@@ -46,6 +46,8 @@ SelectTripExclusions:"Select Trip Exclusions",
 SelectSubTypes:"Select Subtypes",
 ChooseFile:"Choose Picture",
 noFileSelected:"No File Selected",
+
+EditPackage:"Edit Package",
 ProgramSteps:"Program Steps",
 Step:"Step",
 SelectDestination:"Select Destination",
@@ -62,6 +64,10 @@ ImportantField:"Please fill / select at least one . This a requriement ",
 Cancel:"Canel",
 AddItem:"Add Item",
 EditItem:"Edit",
+
+AddedSuccessfully:"Item Added Successfully!",
+EditedSucessfully:"Item edited Successfully !",
+DeletedSuccessfully:"Item Deleted Successfully !",
 DeleteItem:"Delete",
 TitleSingle:"Title",
 DescriptionSingle:"Description",
@@ -73,9 +79,55 @@ Password:"Password",
 EnterPassword:"Enter your password",
 Login:"Login To Arrivo",
 
-SignIn:"Sign In"
+Packages: "Pricing & Grouping" ,
+
+PackagesInfo:"Create packages with different prices and group sizes for your trips easily !",
+AvaliablePackages:"My packages" ,
+
+WorkingPackages:"Currently created packages",
+
+AvaliableTrips:"Avaliable Trips",
+
+CreatePackage:"Create Package",
 
 
+  Success: "Success!",
+  LoginSuccess: "You have successfully logged in. Redirecting...",
+  Loginfailed: "Login Failed",
+
+
+ 
+
+InvalidCredentials: "Username / Password is incorrect",
+  
+
+Loading:"Loading....",
+
+Subtitle:"Sub-title",
+
+DurationDays:" Duaration (Days) ",
+
+
+
+TripSingle:"Trip",
+
+TripSelect:"Select A Trip ",
+
+DateStart:"Date of Start ",
+
+DateEnd:" Ending Date",
+
+
+NoItems:"No added items in this page ",
+
+CreateMessage:"Create items so they can appear.",
+
+
+HelpMessage:"If you are sure you added items but can't see them, refresh the page or call A3 Digital Solutions Support Line.",
+
+GoBackHome:"Go Back Home",
+
+WeAppreicate:" We appreciate your patience. "
 
       
     },
@@ -84,6 +136,12 @@ SignIn:"Sign In"
     translation: {
       welcome: "أهلاً وسهلاً",
       change_lang: "ENGLISH",
+
+
+      AddedSuccessfully:"تمت اضافة العنصر بنجاح !",
+EditedSucessfully:"تم تعديل العنصر بنجاح  !",
+DeletedSuccessfully:"تم مسح العنصر بنجاح !",
+
 
       homeBtn:"الرئيسية",
       ManageOneDay:"ادارة الرحل اليومية",
@@ -109,9 +167,38 @@ SignIn:"Sign In"
       OneTripCrudInfo:"قم بملء تفاصيل الرحلة أدناه لإنشاء رحلة جديدة ليوم واحد",
       TripTitle: "عنوان الرحلة",
       DeleteWarning:"هل متأكد من حذف الرحلة ؟ ",
+      Packages:"نظام التسعير ",
+      PackagesInfo:"قم بتشكيل بكجات سياحية للبرامج مع التسعير والمجموعات بسهولة",
+      DurationDays:" المدة بالايام ",
+      AvaliablePackages:"البكجات الحالية" ,
+
+WorkingPackages:"بكجات يتم تفعيلها",
+
+AvaliableTrips:"الرحل المتوفرة",
+
+CreatePackage:"بكج جديد",
+
+
+
+
 Tags: "التاغات",
 Hours: "الساعات",
 Price: "السعر",
+
+EditPackage:"تعديل يكج",
+
+Loading:"جاري التحميل...",
+
+
+
+TripSingle:"الرحلة",
+
+TripSelect:"قم باختيار رحلة",
+
+DateStart:"تاريخ البدأ",
+
+DateEnd:"تاريخ الانتهاء",
+
 GroupSize: "حجم المجموعة",
 OfferType: "نوع العرض",
 TripDescription: "وصف الرحلة",
@@ -127,6 +214,8 @@ SelectSubTypes: "اختر الأنواع الفرعية",
 ChooseFile: "اختر صورة",
 noFileSelected: "لم يتم اختيار أي ملف",
 ProgramSteps: "مراحل البرنامج",
+Subtitle:"عنوان ثانوي",
+
 Step: "المرحلة",
 SelectDestination: "اختر الوجهة",
 SelectSubDestination: "اختر الوجهة الفرعية",
@@ -140,6 +229,9 @@ Edit:"تعديل الرحلة",
 ImportantField:"يرجى تعبئة او اختيار عنصر - حقل اجباري",
 Cancel:"الغاء",
 AddItem:"اضافة العنصر",
+WeAppreicate:"شكرا نقدر انتظاركم ",
+
+
 
 EditItem:"تعديل",
 DeleteItem:"ازالة",
@@ -154,8 +246,26 @@ EnterUser:"ادخل اسم المستخدم",
 Password:"كلمة السر",
 EnterPassword:"ادخل كلمة السر",
 Login:"تسجيل دخول للوحة التحكم ",
-SignIn:"سجل دخول"
+SignIn:"سجل دخول",
 
+
+
+Success: "تم بنجاح ! ",
+LoginSuccess: " تم تسجيل الدخول ، يتم تحويلكم الى لوحة التحكم .... ",
+Loginfailed: "تعذر تسجيل الدخول !",
+
+InvalidCredentials: "اسم المستخدم او كلمة المرور غير صحيحة ",
+
+
+
+NoItems:"لا توجد عناصر تمت اضافتها سابقا في هذه الصفحة ",
+
+CreateMessage:"قم باضافة عناصر حتى تتمكن من رؤيتها وتنظيمها",
+
+
+HelpMessage:"اذا كنت متاكدا من اضافتك للعناصر سابفا لكن لا تراها الآن تواصل مع فريق A3 Digital Solutions .",
+
+GoBackHome:"الذهاب الى الرئيسية",
 
 
 

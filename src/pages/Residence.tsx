@@ -4,6 +4,10 @@ import { Sidebar } from "@/components/Sidebar";
 import { toast } from "@/hooks/use-toast";
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import LoaderExternal from "@/components/ui/Loader";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import NoItemsPage from "@/components/ui/NoItemsPage";
 
 // GraphQL Queries & Mutations
 const GET_RESIDENCES = gql`
@@ -98,6 +102,7 @@ export default function ResidenceCRUD() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const resetForm = () =>
     setForm({
@@ -203,23 +208,28 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <ProgressLogic />
-      </div>
+   
+ <LoaderExternal/>
+   
     );
   }
   
   if (error) {
-    return <p className="text-red-500">Error: {error.message}</p>;
+    return <ErrorMessage message={error.message}></ErrorMessage>;
   }
   
   if (!data || !data.residences || !data.residences.edges) {
-    return <p className="text-gray-500">No residence data available.</p>;
+    return <NoItemsPage/>;
   }
   
 
   return (
     <>
+       <DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
+
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
         <h1 className="text-2xl font-bold mb-4">{t("Residences")}</h1>
@@ -321,7 +331,7 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
 
         {/* Residence List */}
         <ul className="space-y-4 mb-10">
-          {data.residences.edges.map(({ node }) => (
+          {data?.residences?.edges.map(({ node }) => (
             <li key={node.id} className="p-4 border rounded flex justify-between items-center">
               <div className="flex items-center gap-4">
                 {node.thumbnail && (
@@ -348,6 +358,9 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
             </li>
           ))}
         </ul>
+
+
+        {data?.residences?.edges.length===0 && <NoItemsPage/>}
 
         {/* Form */}
        

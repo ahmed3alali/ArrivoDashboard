@@ -8,6 +8,10 @@ import { useNavigate } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import NoItemsPage from "@/components/ui/NoItemsPage";
+import LoaderExternal from "@/components/ui/Loader";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
 
 
 // Our one day trips avaliable in the DB 
@@ -243,11 +247,11 @@ export default function OneDayTripsPage() {
   const [collapsed, setCollapsed] = useState(false)
 
   {loading && (
-    <div className="flex items-center m-auto w-56 justify-center min-h-screen">
-<ProgressLogic />
-</div>
+   
+<LoaderExternal/>
+
 )}
-  if (error) return <p>Error loading trips: {error.message}</p>;
+  if (error) return <ErrorMessage message={error.message}></ErrorMessage>;
 
   const trips = data?.trips?.edges || [];
 
@@ -255,6 +259,10 @@ export default function OneDayTripsPage() {
 
     <>
 
+<DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
 
 <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
@@ -266,8 +274,8 @@ export default function OneDayTripsPage() {
       className="flex items-center gap-2 w-48 h-10 text-[10px]  ml-auto mr-8 bg-primary text-white rounded-lg hover:bg-primary/90 transition"
     >
       <div className="flex elements m-auto gap-2">
-      <Plus size={12} />
-      <span >{t("CreateOneDayTrip")}</span>
+   
+      <span >{t("AddItem")}</span>
       </div>
 
     </button>
@@ -275,7 +283,7 @@ export default function OneDayTripsPage() {
   
 
 
-      {trips.length === 0 && <p>No trips found.</p>}
+   
 
       <ul className="space-y-6">
 
@@ -287,7 +295,7 @@ export default function OneDayTripsPage() {
         />
 
 
-
+{trips.length === 0 && <NoItemsPage/>}
 
 
         {/*

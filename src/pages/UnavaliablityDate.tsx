@@ -3,6 +3,10 @@ import { gql, useMutation, useQuery } from "@apollo/client";
 import { Sidebar } from "@/components/Sidebar";
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import LoaderExternal from "@/components/ui/Loader";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import NoItemsPage from "@/components/ui/NoItemsPage";
 
 
 export const GET_UNAVAILABILITY_DATES = gql`
@@ -124,26 +128,33 @@ export default function UnavailabilityPage() {
     }
   };
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
 
 
   return (
     <>
+<DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
+
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
         <h1 className="text-2xl font-bold mb-4">{t("Unavaliability")}</h1>
 
          {/* Loading Spinner */}
          {loading && (
-        <div className="flex items-center justify-center min-h-[200px]">
-          <ProgressLogic />
-        </div>
+       <LoaderExternal/>
       )}
      {/* Error */}
      {error && (
-        <div className="p-4 text-red-600">
-          Error loading unavailability dates: {error.message}
-        </div>
+       <ErrorMessage message={error.message}></ErrorMessage>
       )}
+
+
+
+
 
    {/* Guard rendering below until data is ready */}
    {!loading && !error && data?.unavailabilityDates?.edges && (
@@ -222,6 +233,8 @@ export default function UnavailabilityPage() {
         </div>
                </>
                )}
+
+{data?.unavailabilityDates?.edges.length===0 && <NoItemsPage></NoItemsPage>}
 
       </div>
       

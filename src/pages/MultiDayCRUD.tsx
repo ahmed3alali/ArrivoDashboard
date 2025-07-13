@@ -20,6 +20,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { CommonQuestionsMultiSelect } from '@/components/CommonQuestionsMultiSelect';
 import MultiSelectDropdown from '@/components/MultiSelectDropdown';
 import { t } from 'i18next';
+import { DashboardHeader } from '@/components/DashboardHeader';
+import NoItemsPage from '@/components/ui/NoItemsPage';
+import LoaderExternal from '@/components/ui/Loader';
+import { ErrorMessage } from '@/components/ui/ErrorMessage';
+import { Input } from '@/components/ui/input';
 
 
 
@@ -1105,7 +1110,7 @@ useEffect(()=>{
       const priceRegex = /^\$?\d+(\.\d{1,2})?$/;
       const groupSizeRegex = /^\d+(-\d+)?$/; 
       const offerTypeRegex = /^[A-Za-z0-9\u0600-\u06FFçÇğĞıİöÖşŞüÜ .,!?\-()]+$/u;
-      const conditionTextRegex = /^[a-zA-Z0-9\s,.!?'-]*$/;
+      const conditionTextRegex =/^[\p{L}\p{N}\s.,?!'\-()،؟]+$/u;
     
       if (!formData.title.trim()) {
         toast({ title: "Title Missing", description: "Please enter a trip title." });
@@ -1381,6 +1386,10 @@ setProgramSections(parsedProgramSections);
             });
           toast({ title: "Success", description: "Trip updated successfully." });
 
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000); 
+
           } else {
 
             console.log("Thumbnail Base64:", formData.thumbnails_base64);
@@ -1440,6 +1449,10 @@ setProgramSections(parsedProgramSections);
             });
             toast({ title: "Success", description: "Trip created successfully." });
             console.log("group size sent is :",formData.groupSize)
+
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000); 
           }
 
 
@@ -1458,6 +1471,7 @@ setProgramSections(parsedProgramSections);
           // DeleteTrip mutation
           console.log('Deleting trip with id :', id);
           await deleteMultiDayTrip({variables: {id}});
+          window.location.reload();
 
 
         
@@ -1573,12 +1587,17 @@ setProgramSections(parsedProgramSections);
 
       const myTrips = dataTrips?.trips?.edges || []
 
-      if (loadingSubTypes || loadingDestinations || loadingActivities || loadingCommonQuestions || loadingConditions) return <p>Loading...</p>;
-      if (errorSubTypes || errorDestinations) return <p>Error loading dropdown data</p>;
+      if (loadingSubTypes || loadingDestinations || loadingActivities || loadingCommonQuestions || loadingConditions) return <LoaderExternal/>;
+      if (errorSubTypes || errorDestinations) return <ErrorMessage message='Error loading data that will be in dropdowns (subtypes or destinations)'/>;
 
       return (
 
         <>
+
+<DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
 
 
     <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
@@ -1587,13 +1606,13 @@ setProgramSections(parsedProgramSections);
 
     <div className="flex gap-9">
     <h1 className="text-4xl font-bold mb-6">{t("MultidayTrips")}</h1>
-    <Button onClick={openCreateModal}>New Mult-Day Trip</Button>
+    <Button onClick={openCreateModal}>{t("AddItem")}</Button>
 
     </div>
       
 
 
-          {myTrips.length === 0 && <p>No trips found.</p>}
+      
 
           <ul className="space-y-6">
 
@@ -1622,6 +1641,12 @@ setProgramSections(parsedProgramSections);
           setIsViewModalOpen(true);
         }}
       />
+
+{myTrips.length === 0 && <p><NoItemsPage/></p>}
+
+
+
+
     </div>
 
 
@@ -1735,43 +1760,9 @@ setProgramSections(parsedProgramSections);
                       {/*file uploading thumbnails_base64 */}
 
 
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleFileUpload(e,  setThumbValue)} 
-                        className="file-input file-input-bordered w-full"
-                      />
-
-
-                      <label>Thumbnail</label>
-
-                      {(Array.isArray(formData.thumbnails_base64) ? formData.thumbnails_base64 : [formData.thumbnails_base64])
-  .filter(Boolean)
-  .map(({ id, image }) => (
-    <img key={id} src={image} alt="Thumbnail" className="w-32 h-32 object-cover rounded" />
-))}
 
 
 
-                      <label>Card Picture</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleFileUpload(e, setCardValue)}
-                        className="file-input file-input-bordered w-full"
-                      />
-
-                      {formData.card_thumbnail_base64 && (
-                        <img
-                          src={
-                            formData.card_thumbnail_base64.startsWith("data:image")
-                              ? formData.card_thumbnail_base64
-                              : `${formData.card_thumbnail_base64}`
-                          }
-                          alt="Thumbnail preview"
-                          className="w-32 h-32 object-cover rounded"
-                        />
-                      )}
 
 
 
@@ -1787,8 +1778,9 @@ setProgramSections(parsedProgramSections);
     <Select
   value={selectedProvince[0] || ''}  // take first if you want a single select
   onValueChange={(value) => setSelectedProvince([value])}
+  
 >
-  <SelectTrigger className="...">
+  <SelectTrigger className="mt-8 ">
     <SelectValue placeholder={t("SelectProvinces")} />
   </SelectTrigger>
   <SelectContent>
@@ -1889,7 +1881,7 @@ setProgramSections(parsedProgramSections);
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Duration (Days) *
+                    {t("DurationDays")} *
                         </label>
                         <input
                           type="number"
@@ -1901,6 +1893,33 @@ setProgramSections(parsedProgramSections);
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                       </div>
+
+                      <div className="grid gap-4">
+                <label>Card Picture</label>
+                  <div>
+                    <Input type="file" accept="image/*"   onChange={(e) => handleFileUpload(e, setCardValue)} />
+                    {thumbnailBase64Preview &&     <img
+                          src={
+                            formData.card_thumbnail_base64.startsWith("data:image")
+                              ? formData.card_thumbnail_base64
+                              : `${formData.card_thumbnail_base64}`
+                          }
+                          alt="Thumbnail preview" className="mt-2 rounded shadow" />}
+                  </div>
+
+                  <div>
+                  <label>Thumbnail</label>
+                    <Input type="file" accept="image/*"     onChange={(e) => handleFileUpload(e,  setThumbValue)}  />
+                    {(Array.isArray(formData.thumbnails_base64) ? formData.thumbnails_base64 : [formData.thumbnails_base64])
+  .filter(Boolean)
+  .map(({ id, image }) => (
+    <img key={id} src={image} alt="Thumbnail" className="mt-2 rounded shadow" />
+  ))}
+
+                  </div>
+                </div>
+
+
 
                     </div>
 
@@ -2055,7 +2074,7 @@ setProgramSections(parsedProgramSections);
         {/* Sub-title */}
         <input
           type="text"
-          placeholder="Sub-title"
+          placeholder={t("Subtitle")}
           className="w-full mb-3 p-3 border rounded"
           value={section.sub_title}
           onChange={(e) => updateProgramStep(index, 'sub_title', e.target.value)}
@@ -2160,7 +2179,7 @@ setProgramSections(parsedProgramSections);
                         className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                       >
                         <Save size={20} />
-                        {editingTrip ? 'Update Trip' : t("CreateTrip")}
+                        {editingTrip ? t("EditItem") : t("CreateTrip")}
                       </button>
   </div>
                   

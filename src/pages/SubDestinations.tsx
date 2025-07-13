@@ -15,6 +15,10 @@ import {
 import { Sidebar } from "@/components/Sidebar";
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import LoaderExternal from "@/components/ui/Loader";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import NoItemsPage from "@/components/ui/NoItemsPage";
 
 // Queries and Mutations
 const GET_DESTINATIONS = gql`
@@ -163,16 +167,19 @@ export default function SubDestinationsPage() {
     setSelectedDestinationId(node.destination?.id || "");
   };
 
-  {loading || destinationsLoading && (
-    <div className="flex items-center m-auto w-56 justify-center min-h-screen">
-<ProgressLogic />
-</div>
-)}
-  if (error || destinationsError)
-    return <p className="p-4 text-red-500">Error loading data.</p>;
 
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+
+    
+    
   return (
     <>
+       <DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
         <h1 className="text-2xl font-bold mb-4">{t("Subdestinations")}</h1>
@@ -216,6 +223,15 @@ export default function SubDestinationsPage() {
             </Button>
           </div>
         </div>
+{(loading || destinationsLoading) && <LoaderExternal></LoaderExternal>}
+
+
+{(error || destinationsError) && (
+  <ErrorMessage message={error?.message || destinationsError?.message || "Unknown error"} />
+)}
+
+
+
 
         <div className="grid md:grid-cols-2 gap-4 mt-6">
           {data?.subDestinations?.edges.map(({ node }: any) => (
@@ -248,6 +264,7 @@ export default function SubDestinationsPage() {
             </Card>
           ))}
         </div>
+        {data?.subDestinations?.edges.length===0 && <NoItemsPage></NoItemsPage>}
       </div>
     </>
   );

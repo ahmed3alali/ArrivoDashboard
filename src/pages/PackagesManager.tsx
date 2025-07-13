@@ -1,8 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Search, Filter, Calendar, Users, DollarSign, MapPin, Loader2, AlertCircle } from 'lucide-react';
 import { gql, useApolloClient } from '@apollo/client';
+import { DashboardHeader } from '@/components/DashboardHeader';
+import { Sidebar } from '@/components/Sidebar';
+import { t } from 'i18next';
+import { ErrorMessage } from '@/components/ui/ErrorMessage';
+import NoItemsPage from '@/components/ui/NoItemsPage';
+import LoaderExternal from '@/components/ui/Loader';
 // Apollo Client setup (you'll need to configure this with your GraphQL endpoint)
 const GRAPHQL_ENDPOINT = 'YOUR_GRAPHQL_ENDPOINT_HERE';
+interface SidebarProps {
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
+}
+
+
 
 // GraphQL Operations
 const CREATE_TRIP_PACKAGE = gql`
@@ -97,18 +109,7 @@ const LIST_TRIPS = gql`
       edges {
         node {
           __typename
-          ... on OneDayTripNode {
-            id
-            title
-            description
-            tripType
-            durationHours
-            lengthType
-            price
-            groupSize
-            thumbnail
-            cardThumbnail
-          }
+
           ... on MultiDayTripNode {
             id
             title
@@ -137,6 +138,7 @@ const LIST_TRIPS = gql`
       totalCount
     }
   }
+
 `;
 
 const GET_TRIP_PACKAGES = gql`
@@ -212,6 +214,9 @@ const TripPackageCRUD = () => {
     lengthType: ''
   });
 
+
+
+
   // Fetch existing packages
   const fetchTripPackages = async () => {
     setLoading(true);
@@ -221,6 +226,7 @@ const TripPackageCRUD = () => {
       const { data } = await client.query({
         query: GET_TRIP_PACKAGES,
         fetchPolicy: 'network-only',
+      
       });
   
       const packageEdges = data.tripPackages.edges || [];
@@ -249,8 +255,11 @@ const TripPackageCRUD = () => {
         variables,
         fetchPolicy: 'network-only' // optional, to always fetch fresh data
       });
-      const tripEdges = data.trips.edges || [];
-      setTrips(tripEdges.map(edge => edge.node));
+      const tripEdges = (data?.trips?.edges || []).filter(
+        (edge) => edge?.node?.__typename === 'MultiDayTripNode'
+      );
+  
+      setTrips(tripEdges.map((edge) => edge.node));
     } catch (err) {
       setError('Failed to fetch trips: ' + err.message);
     } finally {
@@ -258,6 +267,8 @@ const TripPackageCRUD = () => {
     }
   };
 
+
+  
   // Create package
   const createPackage = async (packageData) => {
     setLoading(true);
@@ -267,6 +278,7 @@ const TripPackageCRUD = () => {
         const { data } = await client.mutate({
             mutation: CREATE_TRIP_PACKAGE,
             variables: packageData,
+
           });
       const newPackage = data.createTripPackage.tripPackage;
       
@@ -277,6 +289,11 @@ const TripPackageCRUD = () => {
       setPackages(prev => [...prev, packageWithTrip]);
       setExistingPackages(prev => [...prev, newPackage]);
       setIsCreateModalOpen(false);
+
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000); 
       
       // Refresh packages if we're filtering by trip
       if (selectedTripId) {
@@ -369,39 +386,63 @@ const TripPackageCRUD = () => {
     
     return matchesSearch && matchesFilters;
   });
-
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8">
+
+    <>
+        <DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
+      <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
+
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Trip Package Manager</h1>
-          <p className="text-gray-600">Create and manage trip packages for your adventures</p>
-        </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2 ">{t("Packages")}</h1>
+          <p className="text-gray-600 mb-4">{t("PackagesInfo")}</p>
+      
 
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
-            <AlertCircle className="h-5 w-5" />
-            {error}
-          </div>
+         <ErrorMessage message={error}></ErrorMessage>
         )}
 
         {/* Search and Filter Bar */}
+
+        <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl mb-3"
+            >
+              <Plus className="h-4 w-4" />
+          {t("CreatePackage")}
+            </button>
+
+
         <div className="mb-6 bg-white rounded-lg shadow-sm p-4">
+          
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
+              
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search trips..."
+                placeholder={t("Search")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="flex gap-2">
-              <select
+       
+              {/*  
+              
+              
+              
+              
+              
+                  <select
                 value={filterOptions.tripType}
                 onChange={(e) => setFilterOptions(prev => ({ ...prev, tripType: e.target.value }))}
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -412,16 +453,8 @@ const TripPackageCRUD = () => {
                 <option value="Culinary">Culinary</option>
                 <option value="Nature">Nature</option>
               </select>
-              <select
-                value={filterOptions.lengthType}
-                onChange={(e) => setFilterOptions(prev => ({ ...prev, lengthType: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">All Lengths</option>
-                <option value="ONE_DAY">One Day</option>
-                <option value="MULTI_DAY">Multi Day</option>
-              </select>
-              <button
+        
+                   <button
                 onClick={() => fetchTrips(filterOptions)}
                 disabled={loading}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
@@ -429,14 +462,27 @@ const TripPackageCRUD = () => {
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Filter className="h-4 w-4" />}
                 Apply Filters
               </button>
+              
+              
+              */}  
+          
+      
+           
             </div>
           </div>
         </div>
 
         {/* Existing Trip Packages Section */}
         <div className="mb-8">
+
+
+{/*   
+
+
+
+
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-gray-900">Available Trip Packages</h2>
+            <h2 className="text-2xl font-semibold text-gray-900">{t("AvaliablePackages")}</h2>
             <div className="flex gap-2">
               <select
                 value={selectedTripId}
@@ -462,14 +508,24 @@ const TripPackageCRUD = () => {
             </div>
           </div>
 
+
+
+*/}
+
+
+
           {existingPackages.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-              <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">
-                {selectedTripId ? 'No packages found for the selected trip.' : 'No packages available yet.'}
-              </p>
-            </div>
-          ) : (
+         <NoItemsPage/>
+
+          ) : 
+          
+          loading  ? (<LoaderExternal/>
+
+          ) 
+          
+          :
+          
+          (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {existingPackages.map((pkg) => (
                 <div key={pkg.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border-l-4 border-green-500">
@@ -505,7 +561,7 @@ const TripPackageCRUD = () => {
                         className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors"
                       >
                         <Edit className="h-4 w-4" />
-                        Edit
+                       {t("EditItem")}
                       </button>
                       <button
                         onClick={() => deletePackage(pkg.id)}
@@ -513,7 +569,7 @@ const TripPackageCRUD = () => {
                         className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                       >
                         <Trash2 className="h-4 w-4" />
-                        Delete
+                      {t("DeleteItem")}
                       </button>
                     </div>
                   </div>
@@ -526,20 +582,14 @@ const TripPackageCRUD = () => {
         {/* Created Packages Section */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-semibold text-gray-900">My Created Packages ({packages.length})</h2>
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              <Plus className="h-4 w-4" />
-              Create Package
-            </button>
+            <h2 className="text-2xl font-semibold text-gray-900">{t("WorkingPackages")} ({packages.length})</h2>
+          
           </div>
 
           {packages.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-lg shadow-sm">
               <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">No packages created in this session yet. Start by creating your first package!</p>
+
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -587,7 +637,7 @@ const TripPackageCRUD = () => {
                         className="flex-1 flex items-center justify-center gap-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100 transition-colors"
                       >
                         <Edit className="h-4 w-4" />
-                        Edit
+                {t("EditItem")}
                       </button>
                       <button
                         onClick={() => deletePackage(pkg.id)}
@@ -595,7 +645,7 @@ const TripPackageCRUD = () => {
                         className="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-600 px-3 py-2 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                       >
                         <Trash2 className="h-4 w-4" />
-                        Delete
+                        {t("DeleteItem")}
                       </button>
                     </div>
                   </div>
@@ -607,12 +657,9 @@ const TripPackageCRUD = () => {
 
         {/* Available Trips */}
         <div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Available Trips ({filteredTrips.length})</h2>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t("AvaliableTrips")} ({filteredTrips.length})</h2>
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <span className="ml-2 text-gray-600">Loading trips...</span>
-            </div>
+      <LoaderExternal/>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTrips.map((trip) => (
@@ -627,9 +674,7 @@ const TripPackageCRUD = () => {
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-semibold text-gray-900">{trip.title}</h3>
-                      <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                        {trip.lengthType === 'ONE_DAY' ? '1 Day' : 'Multi-Day'}
-                      </span>
+                    
                     </div>
                     <p className="text-gray-600 text-sm mb-3">{trip.description}</p>
                     <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
@@ -649,7 +694,7 @@ const TripPackageCRUD = () => {
                       }}
                       className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-2 rounded-lg hover:from-green-600 hover:to-teal-600 transition-all duration-200"
                     >
-                      Create Package
+                     {t("CreatePackage")}
                     </button>
                   </div>
                 </div>
@@ -674,12 +719,53 @@ const TripPackageCRUD = () => {
         />
       </div>
     </div>
+
+    </>
   );
 };
+interface PackageFormData {
+  tripId: string;
+  price: string;
+  groupSize: string;
+  startDate: string;
+  endDate: string;
+}
 
-// Package Modal Component
-const PackageModal = ({ isOpen, onClose, onSubmit, editingPackage, trips, isEdit, loading }) => {
-  const [formData, setFormData] = useState({
+
+
+interface Trip {
+  id: string;
+  title: string;
+}
+
+interface PackageFormData {
+  tripId: string;
+  price: string;
+  groupSize: string;
+  startDate: string;
+  endDate: string;
+}
+
+interface PackageModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (idOrData: any, data?: PackageFormData) => void;
+  editingPackage: any;
+  trips: Trip[];
+  isEdit: boolean;
+  loading: boolean;
+}
+
+const PackageModal: React.FC<PackageModalProps> = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  editingPackage,
+  trips,
+  isEdit,
+  loading
+}) => {
+  const [formData, setFormData] = useState<PackageFormData>({
     tripId: '',
     price: '',
     groupSize: '',
@@ -687,10 +773,12 @@ const PackageModal = ({ isOpen, onClose, onSubmit, editingPackage, trips, isEdit
     endDate: ''
   });
 
-  React.useEffect(() => {
+  const [errors, setErrors] = useState<Partial<Record<keyof PackageFormData, string>>>({});
+
+  useEffect(() => {
     if (editingPackage) {
       setFormData({
-        tripId: editingPackage.tripId || '',
+        tripId: editingPackage.tripId || editingPackage.trip?.id || '',
         price: editingPackage.price || '',
         groupSize: editingPackage.groupSize || '',
         startDate: editingPackage.startDate || '',
@@ -705,9 +793,50 @@ const PackageModal = ({ isOpen, onClose, onSubmit, editingPackage, trips, isEdit
         endDate: ''
       });
     }
+    setErrors({});
   }, [editingPackage]);
 
+  const validate = () => {
+    const newErrors: Partial<Record<keyof PackageFormData, string>> = {};
+
+    if (!isEdit && !formData.tripId) {
+      newErrors.tripId = t('Trip is required');
+    }
+    if (!formData.price) {
+      newErrors.price = t('Price is required');
+    } else if (!/^\$?\d+(\.\d{1,2})?$/.test(formData.price.trim())) {
+      newErrors.price = t('Invalid price format');
+    }
+
+    if (!formData.groupSize) {
+      newErrors.groupSize = t('Group size is required');
+    } else if (!/^\d+(-\d+)?$/.test(formData.groupSize.trim())) {
+      newErrors.groupSize = t('Group size must be a number or range');
+    }
+
+    if (!formData.startDate) {
+      newErrors.startDate = t('Start date is required');
+    }
+
+    if (!formData.endDate) {
+      newErrors.endDate = t('End date is required');
+    }
+
+    if (
+      formData.startDate &&
+      formData.endDate &&
+      new Date(formData.startDate) > new Date(formData.endDate)
+    ) {
+      newErrors.endDate = t('End date must be after start date');
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = () => {
+    if (!validate()) return;
+
     if (isEdit) {
       onSubmit(editingPackage.id, formData);
     } else {
@@ -722,80 +851,97 @@ const PackageModal = ({ isOpen, onClose, onSubmit, editingPackage, trips, isEdit
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            {isEdit ? 'Edit Package' : 'Create Package'}
+            {isEdit ? t('EditPackage') : t('CreatePackage')}
           </h2>
-          
+
           <div className="space-y-4">
             {!isEdit && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Trip</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('TripSingle')}</label>
                 <select
                   value={formData.tripId}
-                  onChange={(e) => setFormData(prev => ({ ...prev, tripId: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, tripId: e.target.value }))
+                  }
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="">Select a trip</option>
-                  {trips.map(trip => (
-                    <option key={trip.id} value={trip.id}>{trip.title}</option>
+                  <option value="">{t('TripSelect')}</option>
+                  {trips.map((trip) => (
+                    <option key={trip.id} value={trip.id}>
+                      {trip.title}
+                    </option>
                   ))}
                 </select>
+                {errors.tripId && <p className="text-red-500 text-sm">{errors.tripId}</p>}
               </div>
             )}
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('Price')}</label>
               <input
                 type="text"
                 value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, price: e.target.value }))
+                }
                 placeholder="e.g., $150"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              {errors.price && <p className="text-red-500 text-sm">{errors.price}</p>}
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Group Size</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('GroupSize')}</label>
               <input
                 type="text"
                 value={formData.groupSize}
-                onChange={(e) => setFormData(prev => ({ ...prev, groupSize: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, groupSize: e.target.value }))
+                }
                 placeholder="e.g., 2-5"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              {errors.groupSize && <p className="text-red-500 text-sm">{errors.groupSize}</p>}
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('DateStart')}</label>
               <input
                 type="date"
                 value={formData.startDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, startDate: e.target.value }))
+                }
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              {errors.startDate && <p className="text-red-500 text-sm">{errors.startDate}</p>}
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('DateEnd')}</label>
               <input
                 type="date"
                 value={formData.endDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, endDate: e.target.value }))
+                }
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              {errors.endDate && <p className="text-red-500 text-sm">{errors.endDate}</p>}
             </div>
-            
+
             <div className="flex gap-3 pt-4">
               <button
                 type="button"
                 onClick={onClose}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                Cancel
+                {t('Cancel')}
               </button>
               <button
                 onClick={handleSubmit}
@@ -805,10 +951,10 @@ const PackageModal = ({ isOpen, onClose, onSubmit, editingPackage, trips, isEdit
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    {isEdit ? 'Updating...' : 'Creating...'}
+                    {t('Loading')}
                   </>
                 ) : (
-                  isEdit ? 'Update Package' : 'Create Package'
+                  isEdit ? t('EditPackage') : t('CreatePackage')
                 )}
               </button>
             </div>

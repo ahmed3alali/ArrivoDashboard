@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+
 import logo from "../pictures/ArrivoLogo.webp"
 import { gql, useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
@@ -26,6 +28,7 @@ const TOKEN_AUTH = gql`
 export default function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showSuccess, setShowSucess] = useState(false);
   const [tempLoading, setTempLoading] = useState(false);
   const [tempError, settempError] = useState("");
   const [tokenAuth, { loading, error, data }] = useMutation(TOKEN_AUTH);
@@ -54,12 +57,17 @@ const handleSubmit = async (e: React.FormEvent) => {
     localStorage.setItem("userName", username);
     localStorage.setItem("userEmail", ""); // if you have email, add here
 
-    alert("Login successful!");
-    navigate("/");
+
+
+    
+   setShowSucess(true)
+   setTimeout(() => {
+     navigate("/");
+   }, 1000);
   } catch (err) {
     setTempLoading(false);
     console.error("Login error", err);
-    settempError("Invalid credentials. Please try again.");
+    settempError(t("InvalidCredentials"));
   }
 };
 
@@ -76,6 +84,22 @@ const handleSubmit = async (e: React.FormEvent) => {
           <CardTitle className="text-center text-2xl">{t("Login")}</CardTitle>
         </CardHeader>
         <CardContent>
+
+        {showSuccess && (
+  <Alert variant="default" className="mb-4 text-green-800">
+    <AlertTitle>{t("Success")}</AlertTitle>
+    <AlertDescription>{t("LoginSuccess")}</AlertDescription>
+  </Alert>
+)}
+
+{tempError && (
+  <Alert variant="destructive" className="mb-4">
+    <AlertTitle>{t("Loginfailed")}</AlertTitle>
+    <AlertDescription>{tempError}</AlertDescription>
+  </Alert>
+)}
+
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="username">{t("Username")}</Label>
@@ -101,7 +125,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               />
             </div>
 
-            {error && <p className="text-red-500 text-sm">{tempError}</p>}
+      
 
             <Button
               type="submit"

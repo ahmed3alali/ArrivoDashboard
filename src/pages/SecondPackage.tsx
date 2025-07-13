@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Search, Filter, Calendar, Users, DollarSign, MapPin, Loader2, AlertCircle } from 'lucide-react';
 import { gql, useApolloClient } from '@apollo/client';
+import LoaderExternal from '@/components/ui/Loader';
 // Apollo Client setup (you'll need to configure this with your GraphQL endpoint)
 const GRAPHQL_ENDPOINT = 'YOUR_GRAPHQL_ENDPOINT_HERE';
 
@@ -605,10 +606,7 @@ const TripPackageCRUD = () => {
         <div>
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">Available Trips ({filteredTrips.length})</h2>
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <span className="ml-2 text-gray-600">Loading trips...</span>
-            </div>
+           <LoaderExternal/>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTrips.map((trip) => (

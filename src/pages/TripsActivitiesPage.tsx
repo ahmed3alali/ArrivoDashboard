@@ -8,6 +8,10 @@ import { Sidebar } from "@/components/Sidebar";
 import { toast } from "@/hooks/use-toast";
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import NoItemsPage from "@/components/ui/NoItemsPage";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import LoaderExternal from "@/components/ui/Loader";
 
 // GraphQL queries + mutations
 const GET_TRIP_ACTIVITIES = gql`
@@ -63,7 +67,7 @@ export default function TripActivitiesPage() {
   const [createActivity] = useMutation(CREATE_TRIP_ACTIVITY);
   const [editActivity] = useMutation(EDIT_TRIP_ACTIVITY);
   const [deleteActivity] = useMutation(DELETE_TRIP_ACTIVITY);
-
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [title, setTitle] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -163,6 +167,10 @@ export default function TripActivitiesPage() {
 
   return (
     <>
+       <DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
       <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
@@ -192,11 +200,14 @@ export default function TripActivitiesPage() {
         </div>
 
         {loading && (
-        <div className="flex items-center m-auto w-56 justify-center min-h-screen">
-    <ProgressLogic />
-  </div>
+    
+<LoaderExternal/>
+
 )}
-        {error && <p className="text-red-500">Error loading trip activities.</p>}
+        {error && <ErrorMessage message="error loading trip activities !"></ErrorMessage>}
+
+
+      
 
         <div className="grid md:grid-cols-2 gap-4 mt-4">
           {data?.tripActivities?.edges.map(({ node }: any) => (
@@ -226,6 +237,7 @@ export default function TripActivitiesPage() {
             </Card>
           ))}
         </div>
+        {data?.tripActivities?.edges?.length === 0 && <p><NoItemsPage/></p>}
       </div>
     </>
   );

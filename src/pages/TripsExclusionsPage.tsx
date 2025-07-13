@@ -7,6 +7,10 @@ import { Sidebar } from "@/components/Sidebar";
 import { toast } from "sonner";
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import LoaderExternal from "@/components/ui/Loader";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import NoItemsPage from "@/components/ui/NoItemsPage";
 
 
     const GET_TRIP_EXCLUSIONS = gql`
@@ -120,8 +124,16 @@ import { t } from "i18next";
       setEditingId(node.id);
       setTitle(node.title);
     };
+
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     return (
       <>
+             <DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
+
+
         <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
         <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
           <h1 className="text-2xl font-bold mb-4">{t("TripExclusions")}</h1>
@@ -152,14 +164,15 @@ import { t } from "i18next";
   
           {/* Errors & Loading */}
           {loading && (
-        <div className="flex items-center m-auto w-56 justify-center min-h-screen">
-    <ProgressLogic />
-  </div>
+    
+ <LoaderExternal/>
+
 )}
-          {error && <p className="text-red-500">Error loading exclusions.</p>}
+          {error && <ErrorMessage message={error.message}></ErrorMessage>}
   
           {/* Table */}
           <div className="overflow-x-auto border rounded-xl shadow-sm">
+        
             <table className="min-w-full text-left text-sm">
               <thead className="bg-gray-100">
                 <tr>
@@ -169,6 +182,8 @@ import { t } from "i18next";
                 </tr>
               </thead>
               <tbody>
+
+           
                 {data?.tripExclusions?.edges.map(({ node }: any) => (
                   <tr key={node.id} className="border-t hover:bg-gray-50">
                     <td className="px-4 py-2">{node.id}</td>
@@ -196,6 +211,7 @@ import { t } from "i18next";
               </tbody>
             </table>
           </div>
+          {data?.tripExclusions?.edges.length ===0 && <NoItemsPage/>}
         </div>
       </>
     );

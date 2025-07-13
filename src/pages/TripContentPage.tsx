@@ -8,6 +8,10 @@ import { Sidebar } from "@/components/Sidebar";
 import { toast } from "@/hooks/use-toast";
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import NoItemsPage from "@/components/ui/NoItemsPage";
+import LoaderExternal from "@/components/ui/Loader";
 
 // GraphQL query + mutations
 const GET_TRIP_CONTENTS = gql`
@@ -91,7 +95,7 @@ export default function TripContentPage() {
   const [iconBase64, setIconBase64] = useState("");
   const [iconFile, setIconFile] = useState<File | null>(null); // keep original file for validation
   const [editingId, setEditingId] = useState<string | null>(null);
-
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   // Regex to allow Arabic letters, numbers, common punctuation, spaces (length 3-100)
   const textRegex = /^[\p{L}\p{N}\s.,?!'\-()،]{3,100}$/u;
 
@@ -284,6 +288,11 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
 
   return (
     <>
+      <DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
+
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
         <h1 className="text-2xl font-bold">{t("TripContent")}</h1>
@@ -329,11 +338,19 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
         </div>
 
         {loading && (
-        <div className="flex items-center m-auto w-56 justify-center min-h-screen">
-    <ProgressLogic />
-  </div>
+ 
+   <LoaderExternal/>
+  
 )}
-        {error && <p className="text-red-500">Error loading trip contents.</p>}
+                {error && <ErrorMessage message="error loading trip contnets !"></ErrorMessage>}
+
+
+
+
+
+
+
+
 
         <div className="grid md:grid-cols-2 gap-4 mt-4">
           {data?.tripContents?.edges.map(({ node }: any) => (
@@ -370,6 +387,7 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
             </Card>
           ))}
         </div>
+        {data?.tripContents?.edges?.length === 0 && <p><NoItemsPage/></p>}
       </div>
     </>
   );

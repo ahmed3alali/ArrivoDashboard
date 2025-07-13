@@ -19,12 +19,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Optional: load user from localStorage on mount
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
-    const storedEmail = localStorage.getItem("userEmail");
-    if (storedName && storedEmail) {
+    const storedEmail = localStorage.getItem("userEmail") || "";
+    if (storedName) {
       setUser({ name: storedName, email: storedEmail });
     }
   }, []);
-
+  
   return (
     <UserContext.Provider value={{ user, setUser }}>
       {children}

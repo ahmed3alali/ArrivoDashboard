@@ -9,6 +9,10 @@ import { Sidebar } from "@/components/Sidebar";
 import { toast } from "sonner"; // or "react-hot-toast"
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import LoaderExternal from "@/components/ui/Loader";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import NoItemsPage from "@/components/ui/NoItemsPage";
 
 
 // GraphQL queries & mutations
@@ -206,8 +210,19 @@ export default function VisitLocationHighlightsPage() {
     return thumbnail.startsWith("http") ? thumbnail : `${backendMediaUrl}/${thumbnail}`;
   };
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
     <>
+
+<DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
+
+
+
+
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
         <h1 className="text-2xl font-bold mb-4">{t("LocationHighlights")}</h1>
@@ -259,11 +274,11 @@ export default function VisitLocationHighlightsPage() {
 
         {/* Error or Loading */}
         {loading && (
-        <div className="flex items-center m-auto w-56 justify-center min-h-screen">
-    <ProgressLogic />
-  </div>
+
+<LoaderExternal></LoaderExternal>
+  
 )}
-        {error && <p className="text-red-500">Error loading highlights.</p>}
+        {error && <ErrorMessage message={error.message}></ErrorMessage>}
 
         {/* Table View */}
         <div className="overflow-x-auto border rounded-xl shadow-sm">
@@ -315,6 +330,8 @@ export default function VisitLocationHighlightsPage() {
             </tbody>
           </table>
         </div>
+
+        {data?.visitLocationHighlights?.edges.length===0 && <NoItemsPage></NoItemsPage>}
       </div>
     </>
   );

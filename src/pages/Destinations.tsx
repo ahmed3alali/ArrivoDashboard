@@ -8,6 +8,10 @@ import { Sidebar } from "@/components/Sidebar";
 import { toast } from "@/hooks/use-toast";
 import { ProgressLogic } from "@/components/ui/ProgressLogic";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import LoaderExternal from "@/components/ui/Loader";
+import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import NoItemsPage from "@/components/ui/NoItemsPage";
 
 const GET_DESTINATIONS = gql`
   query GetDestinations($first: Int = 10) {
@@ -123,8 +127,15 @@ export default function DestinationsPage() {
     setTitle("");
   };
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
     <>
+    <DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
+
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
       <div className="ltr:ml-16 ltr:md:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
         <h1 className="text-2xl font-bold mb-4">{t("Destinations")}</h1>
@@ -148,11 +159,9 @@ export default function DestinationsPage() {
         </div>
 
         {loading && (
-        <div className="flex items-center m-auto w-56 justify-center min-h-screen">
-    <ProgressLogic />
-  </div>
+      <LoaderExternal/>
 )}
-        {error && <p className="text-red-500">Error loading destinations: {error.message}</p>}
+        {error && <ErrorMessage message={error.message}></ErrorMessage>}
 
         {/* Grid */}
         <div className="grid md:grid-cols-2 gap-4 mt-4">
@@ -183,6 +192,8 @@ export default function DestinationsPage() {
             </Card>
           ))}
         </div>
+
+        {data?.destinations?.edges.length ===0 && <NoItemsPage></NoItemsPage>}
       </div>
     </>
   );

@@ -1,4 +1,4 @@
-import { Plane, MessageCircleQuestion,Volleyball,MapPinHouse,House,ShieldAlert,Camera, Images,ChartColumnStacked, Rss, List, Home, Menu, X, Calendar, HomeIcon } from 'lucide-react';
+import { Plane, MessageCircleQuestion,Volleyball,MapPinHouse,House,ShieldAlert,Camera, Images,ChartColumnStacked, Rss, List, Home, Menu, X, Calendar, HomeIcon, Calendar1 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from "../pictures/ArrivoLogo.webp";
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,8 @@ export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     const newLang = i18n.language === 'en' ? 'ar' : 'en';
     i18n.changeLanguage(newLang);
     localStorage.setItem('appLanguage', newLang);
+    window.location.reload();
+
   };
   useEffect(() => {
     document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
@@ -32,6 +34,10 @@ export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
     { label: t("ManageOneDay"), icon: List, link: '/oneday-trip' },
     { label: t("OneDayTrips"), icon: Plane, link: '/tripsOne' },
     { label: t("MultidayTrips"), icon: Plane, link: '/multi-trip' },
+   
+       
+        { label: t("Packages"), icon: Calendar1, link: '/package' },
+   
    
     { label: t("CommonQuestions"), icon: MessageCircleQuestion, link: '/common' },
     { label: t("TripContent"), icon: Rss, link: '/tripContent' },
@@ -68,12 +74,20 @@ export const Sidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
           </div>
         )}
       
-        <button
+      {/**
+       * 
+       * 
+       * 
+       *    <button
           onClick={() => setCollapsed(!collapsed)}
           className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
         >
           {collapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
         </button>
+       * 
+       * 
+       */}
+     
       </div>
 
       {/* Navigation with scroll */}

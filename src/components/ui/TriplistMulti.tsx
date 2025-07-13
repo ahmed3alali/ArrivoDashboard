@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Edit, Trash2, MapPin, Calendar, Users, DollarSign } from 'lucide-react';
 import { Trip } from '../../types/Trip';
+import { t } from 'i18next';
 
 interface TripsListProps {
   trips: { node: Trip }[];
@@ -48,8 +49,8 @@ export const TripsListMulti = ({ trips, onEditTrip, onDeleteTrip, onViewTrip }: 
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Trip Management</h1>
-          <p className="text-gray-600 mt-1">Manage your travel packages and destinations</p>
+          <h1 className="text-3xl font-bold text-gray-800">{t("TripManagement")}</h1>
+          <p className="text-gray-600 mt-1">{t("ManageTripsDescription")}</p>
         </div>
 
         <div className="flex items-center space-x-4">

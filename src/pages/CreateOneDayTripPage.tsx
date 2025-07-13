@@ -14,6 +14,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { ChevronDown, Terminal } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { t } from "i18next";
+import { DashboardHeader } from "@/components/DashboardHeader";
 
 // --- GraphQL Queries ---
 const GET_PROVINCES = gql`
@@ -704,8 +705,8 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
       
           toast({
             variant: "default",
-            title: "Success",
-            description: "Trip created successfully! Please Wait....",
+            title: t("Success"),
+            description: t("AddedSuccessfully"),
           });
           
         }
@@ -878,6 +879,10 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
 
   return (
     <>
+    <DashboardHeader 
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+        />
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
 
       <div className="ltr:ml-16 md:ltr:ml-64 md:rtl:mr-64 min-h-screen bg-muted/50 py-10 px-6">
@@ -1219,7 +1224,13 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
           </Card>
 
           {/* Trip List */}
+
+          
           {data?.trips?.edges.map(({ node: trip }) => (
+
+
+
+
             <Card key={trip.id} className="mt-6 shadow-md" id="one-day-trips">
               <CardContent className="pt-6 space-y-4 text-sm text-muted-foreground">
                 <div>

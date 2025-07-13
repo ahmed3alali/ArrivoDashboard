@@ -26,7 +26,7 @@ export const DashboardHeader = ({ sidebarCollapsed, setSidebarCollapsed }: Dashb
   }, []);
 
   function handleSignOut() {
-    Cookies.remove("authToken");
+    localStorage.removeItem("authToken");
     setUser(null);
     navigate("/login", { replace: true });
   }
