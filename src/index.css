@@ -137,3 +137,6 @@
 
 
 
+html[dir="rtl"] {
+  font-family: 'Almarai', sans-serif;
+}

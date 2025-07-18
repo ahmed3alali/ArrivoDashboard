@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Edit, Trash2, MapPin, Calendar, Users, DollarSign } from 'lucide-react';
+import { Edit, Trash2, MapPin, Calendar, Users, DollarSign, Clock } from 'lucide-react';
 import { Trip } from '../../types/Trip';
 import { t } from 'i18next';
 
@@ -45,6 +45,16 @@ export const TripsListMulti = ({ trips, onEditTrip, onDeleteTrip, onViewTrip }: 
     node.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
+const hoursToDays =(hours)=>{
+
+const days = Math.ceil(hours/24)
+
+return days;
+
+
+}
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -53,7 +63,11 @@ export const TripsListMulti = ({ trips, onEditTrip, onDeleteTrip, onViewTrip }: 
           <p className="text-gray-600 mt-1">{t("ManageTripsDescription")}</p>
         </div>
 
-        <div className="flex items-center space-x-4">
+{/**
+ * 
+ * 
+ * 
+ *     <div className="flex items-center space-x-4">
           <input
             type="text"
             placeholder="Search trips..."
@@ -63,6 +77,11 @@ export const TripsListMulti = ({ trips, onEditTrip, onDeleteTrip, onViewTrip }: 
             maxLength={100} // also limit in HTML input element
           />
         </div>
+ * 
+ * 
+ * 
+ */}
+     
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -103,8 +122,8 @@ export const TripsListMulti = ({ trips, onEditTrip, onDeleteTrip, onViewTrip }: 
                 </div>
                
                 <div className="flex items-center text-sm text-gray-600">
-                  <Calendar className="w-4 h-4 mr-2 rtl:ml-2 text-green-500" />
-                  {trip.durationHours}
+                  <Clock className="w-4 h-4 mr-2 rtl:ml-2 text-green-500" />
+               {hoursToDays(trip.durationHours)}
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="w-4 h-4 mr-2 rtl:ml-2 text-purple-500" />

@@ -42,6 +42,13 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
     setSearchTerm(value.trimStart());
   };
   
+
+  const hoursToDays = (hours)=>{
+const days = Math.ceil(hours/24)
+
+return days;
+
+  }
   
   // Filter trips by search term (case-insensitive)
   const filteredTrips = trips.filter(({ node }) =>
@@ -107,7 +114,7 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
                 
                 <div className="flex items-center text-sm text-gray-600">
                   <Clock className="w-4 h-4 mr-2 rtl:ml-2 text-green-500" />
-                  {trip.durationHours}
+                  {hoursToDays(trip.durationHours)}
                 </div>
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="w-4 h-4 mr-2 rtl:ml-2 text-purple-500" />

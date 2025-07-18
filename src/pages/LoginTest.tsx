@@ -30,6 +30,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [showSuccess, setShowSucess] = useState(false);
   const [tempLoading, setTempLoading] = useState(false);
+  const [isSucessLogin, setIsSuccessLogin] = useState(false);
   const [tempError, settempError] = useState("");
   const [tokenAuth, { loading, error, data }] = useMutation(TOKEN_AUTH);
 
@@ -38,6 +39,10 @@ export default function LoginForm() {
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
+
+  if (tempLoading) {
+    return;
+  }
   settempError("");
   setTempLoading(true);
 
@@ -61,6 +66,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     
    setShowSucess(true)
+   setIsSuccessLogin(true)
    setTimeout(() => {
      navigate("/");
    }, 1000);
@@ -106,6 +112,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               <Input
                 id="username"
                 type="text"
+                
                 placeholder={t("EnterUser")}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -129,10 +136,10 @@ const handleSubmit = async (e: React.FormEvent) => {
 
             <Button
               type="submit"
-              className={cn("w-full", loading && "opacity-70 cursor-not-allowed")}
-              disabled={loading}
+              className={cn("w-full", tempLoading && "opacity-70 cursor-not-allowed")}
+              disabled={tempLoading || isSucessLogin}
             > 
-              {loading ? "Signing in..." : t("SignIn")}
+              {tempLoading ? "Signing in please wait..." : t("SignIn")}
             </Button>
 
            

@@ -12,6 +12,14 @@ import './index.css';
 import { UserProvider } from './adminAuth/UserContext';
 import { createTheme, MantineProvider } from '@mantine/core';
 
+
+// Before ReactDOM.createRoot(...)
+const lang = localStorage.getItem("appLanguage") || "en";
+document.documentElement.lang = lang;
+document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+
+
 // HTTP connection to the API
 const httpLink = createHttpLink({
   uri:
