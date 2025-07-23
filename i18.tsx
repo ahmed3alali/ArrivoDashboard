@@ -8,6 +8,7 @@ const resources = {
       change_lang: "العربية",
       homeBtn:"Home",
       TripManagement :"Trip Management",
+DuplicateTrip:"Duplicate Trip",
 
       ManageOneDay:"Manage 1 Day Trips",
       OneDayTrips:"One Day Trips",
@@ -167,6 +168,8 @@ DeletedSuccessfully:"تم مسح العنصر بنجاح !",
       OneTripCrudInfo:"قم بملء تفاصيل الرحلة أدناه لإنشاء رحلة جديدة ليوم واحد",
       TripTitle: "عنوان الرحلة",
       DeleteWarning:"هل متأكد من حذف الرحلة ؟ ",
+      DuplicateTrip:"تكرار الرحلة",
+      
       Packages:"نظام التسعير ",
       PackagesInfo:"قم بتشكيل بكجات سياحية للبرامج مع التسعير والمجموعات بسهولة",
       DurationDays:" المدة بالايام ",

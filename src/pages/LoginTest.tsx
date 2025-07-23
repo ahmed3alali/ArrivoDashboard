@@ -55,14 +55,14 @@ const handleSubmit = async (e: React.FormEvent) => {
     setTempLoading(false);
 
     const token = response.data.tokenAuth.token;
-    document.cookie = `authToken=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure;`;
+    document.cookie = `authToken=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; ;`;
 
 
 
     // Setf user in context and localStorage (you can customize this)
     setUser({ name: username, email: "" });
-    document.cookie = `userName=${encodeURIComponent(username)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure;`;
-document.cookie = `userEmail=;  path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure;`; // set empty for now
+    document.cookie = `userName=${encodeURIComponent(username)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax;`;
+document.cookie = `userEmail=;  path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; `; // set empty for now
 
 
 

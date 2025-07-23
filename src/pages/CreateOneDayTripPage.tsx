@@ -1606,7 +1606,7 @@ const handleDuplicateTrip = async (trip) => {
                 <div className="flex gap-2 mt-4">
                   <Button variant="secondary" onClick={() => handleEditTrip(trip)}>{t("Edit")}</Button>
                   <Button variant="destructive" onClick={() => handleDeleteTrip(trip.id)}>{t("Delete")}</Button>
-                  <Button variant="destructive" onClick={() => handleDuplicateTrip(trip)}>{t("Duplicated")}</Button>
+                  <Button variant="destructive" onClick={() => handleDuplicateTrip(trip)}>{t("DuplicateTrip")}</Button>
                 </div>
               </CardContent>
             </Card>
