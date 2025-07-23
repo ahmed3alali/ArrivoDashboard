@@ -4,6 +4,8 @@ import {
   InMemoryCache,
   ApolloProvider,
   createHttpLink,
+  ApolloLink,
+  concat,
 } from '@apollo/client';
 import { errorLink } from './adminAuth/apolloErrorLink'; 
 import { setContext } from '@apollo/client/link/context';
@@ -18,6 +20,11 @@ const lang = localStorage.getItem("appLanguage") || "en";
 document.documentElement.lang = lang;
 document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 
+export function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? match[2] : null;
+}
+
 
 
 // HTTP connection to the API
@@ -29,19 +36,23 @@ const httpLink = createHttpLink({
 });
 
 // Middleware to add the authorization header with token from localStorage
-const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem('authToken'); // Your JWT token key
-  return {
-    headers: {
-      ...headers,
-      authorization: token ? `JWT ${token}` : '',
-    },
-  };
+const authMiddleware = new ApolloLink((operation, forward) => {
+  const token = getCookie("authToken");
+
+  if (token) {
+    operation.setContext({
+      headers: {
+        Authorization: `JWT ${token}`,
+      },
+    });
+  }
+
+  return forward(operation);
 });
 
 // Create Apollo Client instance with authLink middleware and cache
 const client = new ApolloClient({
-  link: errorLink.concat(authLink.concat(httpLink)),
+  link: concat(authMiddleware, httpLink),
   cache: new InMemoryCache(),
 });
 

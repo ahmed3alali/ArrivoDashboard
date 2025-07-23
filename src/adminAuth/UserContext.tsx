@@ -1,5 +1,6 @@
 // context/UserContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+// adjust path if needed
 
 interface User {
   name: string;
@@ -10,21 +11,24 @@ interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
 }
+export function getCookie(name: string): string | null {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? match[2] : null;
+}
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  // Optional: load user from localStorage on mount
   useEffect(() => {
-    const storedName = localStorage.getItem("userName");
-    const storedEmail = localStorage.getItem("userEmail") || "";
-    if (storedName) {
-      setUser({ name: storedName, email: storedEmail });
+    const name = getCookie("userName"); // from cookie, not localStorage
+    const email = getCookie("userEmail") || "";
+    if (name) {
+      setUser({ name, email });
     }
   }, []);
-  
+
   return (
     <UserContext.Provider value={{ user, setUser }}>
       {children}

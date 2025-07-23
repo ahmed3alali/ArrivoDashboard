@@ -24,10 +24,18 @@ export const DashboardHeader = ({ sidebarCollapsed, setSidebarCollapsed }: Dashb
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  
+  function clearCookie(name: string) {
+    document.cookie = `${name}=; Max-Age=0; path=/`;
+  }
+
+  
 
   function handleSignOut() {
-    localStorage.removeItem("authToken");
-    setUser(null);
+    clearCookie("authToken");
+    clearCookie("userName");
+    clearCookie("userEmail");
+
     navigate("/login", { replace: true });
   }
 

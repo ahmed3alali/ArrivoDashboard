@@ -58,7 +58,7 @@ const GET_TRIP_CONTENTS = gql`
 
 const GET_TRIP_ACTIVITIES = gql`
   query {
-    tripActivities(first: 10) {
+    tripActivities {
       edges {
         node {
           id
@@ -71,7 +71,7 @@ const GET_TRIP_ACTIVITIES = gql`
 
 const GET_IMPORTANT_INFOS = gql`
   query {
-    tripImportantInfos(first: 10) {
+    tripImportantInfos {
       edges {
         node {
           id
@@ -150,6 +150,12 @@ query {
           durationHours
           thumbnail
           cardThumbnail
+            importantInfos{
+              
+              id
+              title
+            }
+
           price
           groupSize
           tags
@@ -160,6 +166,12 @@ query {
                 id
                 title
                 picture
+            }
+
+               exclusions{
+              
+              id
+              title
             }
 
           commonQuestions {
@@ -426,8 +438,17 @@ type Option = {
 
 
 const CreateOneDayTripPage = () => {
+
+  const [activeView, setActiveView] = useState<'trips' | 'oneDay-trip'>('trips');
+  const [trips, setTrips] = useState<Trip[]>([]);
+
+
+  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
   const { control, handleSubmit, register, setValue } = useForm();
-  const [createTrip] = useMutation(CREATE_ONE_DAY_TRIP);
+ 
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
@@ -452,7 +473,8 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
   const { data: subDestinationsData } = useQuery(GET_SUB_DESTINATIONS);
   const { data: commonQuestionsData } = useQuery(GET_COMMON_QUESTIONS);
   const [editTrip] = useMutation(EDIT_ONE_DAY_TRIP);
-  const [originalTrip, setOriginalTrip] = useState(null); // Add this at the top
+  const [originalTrip, setOriginalTrip] = useState(null);
+  const [createTrip] = useMutation(CREATE_ONE_DAY_TRIP); // Add this at the top
 
   const multilingualPattern = /^[A-Za-z0-9\u0600-\u06FFçÇğĞıİöÖşŞüÜ .,!?\-()]+$/u;
 
@@ -795,20 +817,195 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
 
   // Optional: you can add a state like const [editingTripId, setEditingTripId] = useState<string | null>(null);
 
-  const handleEditTrip = async (trip) => {
-    setOriginalTrip(trip); // 👈 store the trip in state
-    setValue("title", trip.title);
+// Replace your current handleEditTrip function with this fixed version:
 
+const handleEditTrip = async (trip) => {
+  setOriginalTrip(trip); // 👈 store the trip in state
+  setValue("title", trip.title);
+  setValue("tripDescription", trip.description);
+  setValue("durationHours", trip.durationHours);
+  setValue("price", trip.price);
+  setValue("groupSize", trip.groupSize);
+  setValue("offerType", trip.offerType);
+  setValue("tags", trip.tags || []);
+
+  // ✅ FIX: Set program state AND form value correctly
+  if (trip.programSections?.length) {
+    const parsedProgramSections = trip.programSections.map((section, index) => ({
+      order: index + 1, // Add order field
+      destinationId: section.destination?.id || "",
+      subDestinationIds: (section.subDestinations?.edges || [])
+        .map(({ node }) => node.id)
+    }));
+
+    // ✅ Update both the local state and form value
+    setProgram(parsedProgramSections);
+    setValue("program", parsedProgramSections);
+  }
+
+  // Select fields
+  setValue("provinceIds", trip.provinces.map((p) => ({ value: p.id, label: p.name })));
+  
+  if (activitiesData?.tripActivities?.edges?.length) {
+    setValue(
+      "activityIds",
+      trip.activities.map((a) => {
+        const option = activitiesData.tripActivities.edges.find(({ node }) => node.id === a.id);
+        return {
+          value: a.id,
+          label: option?.node.title || a.title  // fallback if data isn't matched
+        };
+      })
+    );
+  }
+
+  if (commonQuestionsData?.commonQuestions?.edges?.length) {
+    setValue(
+      "commonQuestionIds",
+      trip.commonQuestions.map((q) => {
+        const option = commonQuestionsData.commonQuestions.edges.find(({ node }) => node.id === q.id);
+        return {
+          value: q.id,
+          label: option?.node.question || q.question // fallback
+        };
+      })
+    );
+  }
+
+  if (highlightsData?.visitLocationHighlights?.edges?.length) {
+    setValue(
+      "visitLocationHighlightIds",
+      trip.visitLocationHighlights.map((q) => {
+        const option = highlightsData.visitLocationHighlights.edges.find(({ node }) => node.id === q.id);
+        return {
+          value: q.id,
+          label: option?.node.title || q.title // fallback
+        };
+      })
+    );
+  }
+
+  if (contentsData?.tripContents?.edges?.length) {
+    setValue(
+      "contentIds",
+      trip.contents.map((q) => {
+        const option = contentsData.tripContents.edges.find(({ node }) => node.id === q.id);
+        return {
+          value: q.id,
+          label: option?.node.title || q.title // fallback
+        };
+      })
+    );
+  }
+
+  if (infosData?.tripImportantInfos?.edges?.length) {
+    setValue(
+      "importantInfoIds",
+      trip.importantInfos.map((q) => {
+        const option = infosData.tripImportantInfos.edges.find(({ node }) => node.id === q.id);
+        return {
+          value: q.id,
+          label: option?.node.title || q.title // fallback
+        };
+      })
+    );
+  }
+
+  if (exclusionsData?.tripExclusions?.edges?.length) {
+    setValue(
+      "exclusionIds",
+      trip.exclusions.map((q) => {
+        const option = exclusionsData.tripExclusions.edges.find(({ node }) => node.id === q.id);
+        return {
+          value: q.id,
+          label: option?.node.title || q.title // fallback
+        };
+      })
+    );
+  }
+
+  setValue("galleryImageIds", trip.galleryImages.map((p) => ({ value: p.id, label: p.title })));
+  setValue("subTypeId", trip.galleryImages.map((p) => ({ value: p.id, label: p.title })));
+
+  // Show previews
+  if (trip.thumbnail) {
+    const url = `${backendMediaUrl}/${trip.thumbnail}`;
+    setThumbnailBase64Preview(url);
+
+    // 💡 Fetch as base64 because backend requires it
+    const base64 = await fetchImageAsBase64(url);
+    setValue("thumbnailBase64", base64);
+  }
+
+  if (trip.cardThumbnail) {
+    const url = `${backendMediaUrl}/${trip.cardThumbnail}`;
+    setCardThumbnailBase64Preview(url);
+
+    const base64 = await fetchImageAsBase64(url);
+    setValue("cardThumbnailBase64", base64);
+  }
+
+  setEditingTripId(trip.id);
+};
+
+const handleDuplicateTrip = async (trip) => {
+  try {
+    // Show loading state
+    toast({
+      variant: "default",
+      title: "Duplicating Trip",
+      description: "Please wait while we duplicate the trip...",
+    });
+
+    // Reset any editing state
+    setEditingTripId(null);
+    
+    // Clear form first
+    setValue("title", "");
+    setValue("tripDescription", "");
+    setValue("durationHours", "");
+    setValue("price", "");
+    setValue("groupSize", "");
+    setValue("offerType", "");
+    setValue("tags", []);
+    setValue("provinceIds", []);
+    setValue("activityIds", []);
+    setValue("commonQuestionIds", []);
+    setValue("visitLocationHighlightIds", []);
+    setValue("contentIds", []);
+    setValue("importantInfoIds", []);
+    setValue("exclusionIds", []);
+    setValue("galleryImageIds", []);
+    setValue("subTypeIds", []);
+    setValue("thumbnailBase64", "");
+    setValue("cardThumbnailBase64", "");
+    setThumbnailBase64Preview("");
+    setCardThumbnailBase64Preview("");
+
+    // Set duplicate values with "(Copy)" suffix
+    setValue("title", `${trip.title} (Copy)`);
     setValue("tripDescription", trip.description);
     setValue("durationHours", trip.durationHours);
     setValue("price", trip.price);
     setValue("groupSize", trip.groupSize);
     setValue("offerType", trip.offerType);
     setValue("tags", trip.tags || []);
-    setValue("program", trip.programSections)
 
-    // Select fields
-    setValue("provinceIds", trip.provinces.map((p) => ({ value: p.id, label: p.name })));
+    // Set program sections
+    if (trip.programSections?.length) {
+      const parsedProgramSections = trip.programSections.map((section, index) => ({
+        order: index + 1,
+        destinationId: section.destination?.id || "",
+        subDestinationIds: (section.subDestinations?.edges || [])
+          .map(({ node }) => node.id)
+      }));
+
+      setProgram(parsedProgramSections);
+      setValue("program", parsedProgramSections);
+    }
+
+    // Set select fields
+ 
     if (activitiesData?.tripActivities?.edges?.length) {
       setValue(
         "activityIds",
@@ -816,14 +1013,12 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
           const option = activitiesData.tripActivities.edges.find(({ node }) => node.id === a.id);
           return {
             value: a.id,
-            label: option?.node.title || a.title  // fallback if data isn’t matched
+            label: option?.node.title || a.title  // fallback if data isn't matched
           };
         })
       );
     }
-
-
-
+  
     if (commonQuestionsData?.commonQuestions?.edges?.length) {
       setValue(
         "commonQuestionIds",
@@ -831,28 +1026,72 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
           const option = commonQuestionsData.commonQuestions.edges.find(({ node }) => node.id === q.id);
           return {
             value: q.id,
-            label: option?.node.question || q.question // fallback
+            label: option?.node.question || q.question
           };
         })
       );
     }
 
-    setValue("galleryImageIds", trip.galleryImages.map((p) => ({ value: p.id, label: p.title })));
+    if (highlightsData?.visitLocationHighlights?.edges?.length) {
+      setValue(
+        "visitLocationHighlightIds",
+        trip.visitLocationHighlights.map((q) => {
+          const option = highlightsData.visitLocationHighlights.edges.find(({ node }) => node.id === q.id);
+          return {
+            value: q.id,
+            label: option?.node.title || q.title
+          };
+        })
+      );
+    }
 
-   
+    if (contentsData?.tripContents?.edges?.length) {
+      setValue(
+        "contentIds",
+        trip.contents.map((q) => {
+          const option = contentsData.tripContents.edges.find(({ node }) => node.id === q.id);
+          return {
+            value: q.id,
+            label: option?.node.title || q.title
+          };
+        })
+      );
+    }
 
+    if (infosData?.tripImportantInfos?.edges?.length) {
+      setValue(
+        "importantInfoIds",
+        trip.importantInfos.map((q) => {
+          const option = infosData.tripImportantInfos.edges.find(({ node }) => node.id === q.id);
+          return {
+            value: q.id,
+            label: option?.node.title || q.title
+          };
+        })
+      );
+    }
+    setValue("provinceIds", trip.provinces.map((p) => ({ value: p.id, label: p.name })));
 
+    if (exclusionsData?.tripExclusions?.edges?.length) {
+      setValue(
+        "exclusionIds",
+        trip.exclusions.map((q) => {
+          const option = exclusionsData.tripExclusions.edges.find(({ node }) => node.id === q.id);
+          return {
+            value: q.id,
+            label: option?.node.title || q.title
+          };
+        })
+      );
+    }
 
-    setValue("subTypeId", trip.galleryImages.map((p) => ({ value: p.id, label: p.title })));
-
-
-
-    // Show previews
+    // Set gallery images and sub types
+    setValue("galleryImageIds", trip.galleryImages?.map((p) => ({ value: p.id, label: p.title })) || []);
+    
+    // Handle images - duplicate the base64 data
     if (trip.thumbnail) {
       const url = `${backendMediaUrl}/${trip.thumbnail}`;
       setThumbnailBase64Preview(url);
-
-      // 💡 Fetch as base64 because backend requires it
       const base64 = await fetchImageAsBase64(url);
       setValue("thumbnailBase64", base64);
     }
@@ -860,22 +1099,29 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
     if (trip.cardThumbnail) {
       const url = `${backendMediaUrl}/${trip.cardThumbnail}`;
       setCardThumbnailBase64Preview(url);
-
       const base64 = await fetchImageAsBase64(url);
       setValue("cardThumbnailBase64", base64);
     }
 
-    setEditingTripId(trip.id);
-  };
+    // Scroll to form
+    document.querySelector('form')?.scrollIntoView({ behavior: 'smooth' });
 
+    toast({
+      variant: "default",
+      title: "Trip Duplicated",
+      description: "Trip data has been loaded into the form. You can now modify and save it as a new trip.",
+    });
 
-  const [activeView, setActiveView] = useState<'trips' | 'oneDay-trip'>('trips');
-  const [trips, setTrips] = useState<Trip[]>([]);
+  } catch (error) {
+    console.error("Error duplicating trip:", error);
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to duplicate the trip. Please try again.",
+    });
+  }
+};
 
-
-  const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <>
@@ -1360,6 +1606,7 @@ const backendMediaUrl = import.meta.env.VITE_BACKEND_URL_MEDIA;
                 <div className="flex gap-2 mt-4">
                   <Button variant="secondary" onClick={() => handleEditTrip(trip)}>{t("Edit")}</Button>
                   <Button variant="destructive" onClick={() => handleDeleteTrip(trip.id)}>{t("Delete")}</Button>
+                  <Button variant="destructive" onClick={() => handleDuplicateTrip(trip)}>{t("Duplicated")}</Button>
                 </div>
               </CardContent>
             </Card>

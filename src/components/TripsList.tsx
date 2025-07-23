@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Edit, Trash2, MapPin, Calendar, Users, DollarSign, Clock } from 'lucide-react';
+import { Edit, Trash2, MapPin, Calendar, Users, DollarSign, Clock, Plus } from 'lucide-react';
 import { Trip } from '../types/Trip';
 import { t } from 'i18next';
 
@@ -135,6 +135,13 @@ return days;
                     aria-label={`Edit ${trip.title}`}
                   >
                     <Edit className="w-4 h-4 " />
+                  </button>
+                  <button
+                    onClick={() => onEditTrip(trip)}
+                    className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                    aria-label={`Edit ${trip.title}`}
+                  >
+                    <Plus className="w-4 h-4 " />
                   </button>
                   <button
                     onClick={() => onDeleteTrip(trip.id)}

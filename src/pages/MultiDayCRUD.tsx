@@ -191,11 +191,15 @@ query {
               id
               title
             }
-            subDestinations(first: 10) {
+            subDestinations {
               edges {
                 node {
                   id
                   title
+                  destination{
+                    id
+                    title
+                  }
                 }
               }
             }
@@ -1191,6 +1195,102 @@ useEffect(()=>{
       
       };
 
+
+
+      const fetchImageAsBase64 = async (url) => {
+        const response = await fetch(url);
+        const blob = await response.blob();
+      
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+      };
+      
+      const duplicateTrip = async (trip) => {
+        try {
+          // Convert images to Base64 if they exist
+          const cardThumbnailBase64 = trip.cardThumbnail
+            ? await fetchImageAsBase64(trip.cardThumbnail)
+            : null;
+      
+          const thumbnailsBase64 = trip.thumbnails?.length
+            ? await Promise.all(
+                trip.thumbnails.map((thumb) =>
+                  fetchImageAsBase64(thumb.image)
+                )
+              )
+            : [];
+      
+          const provinceIds = trip.provinces?.map(p => p.id) || [];
+          const condtionIds = trip.conditions?.map(p => p.id) || [];
+          const subtypesIds = trip.subTypes?.map(p => p.id) || [];
+          const contentIds = trip.content?.map(p => p.id) || [];
+          const commonQuestionIds = trip.commonQuestions?.map(q => q.id) || [];
+          const visitIds = trip.visitLocationHighlights?.map(v => v.id) || [];
+          const galleryImageIds = trip.galleryImages?.map(img => img.id) || [];
+          const placesOfResidenceIds = trip.placesOfResidence?.map(r => r.id) || [];
+      
+          const parsedProgramSections = trip.dayPrograms?.map((step, idx) => ({
+            dayNumber: idx + 1,
+            title: step.title || "",
+            subTitle: step.subTitle || "",
+            description: step.description || "",
+            destinationId: step.destination?.id || null,
+            subDestinationIds: step.subDestinations?.map(sub => sub.id) || [],
+            visitHighlightIds: step.visitHighlights?.map(h => h.id) || [],
+            activityIds: step.activities?.edges.map(({ node }) => node.id) || [],
+            residenceName: step.residenceName || "",
+          }));
+      
+          await createMultiDayTrip({
+            variables: {
+              title: `${trip.title} (Copy)`,
+              subTypeIds: subtypesIds,
+              durationDays: Number(trip.durationDays) || 1,
+              tripDescription: trip.description || "",
+              provinceIds,
+              commonQuestionIds,
+              visitLocationHighlightIds: visitIds,
+              contentIds,
+              groupSize: trip.groupSize || null,
+              placesOfResidenceIds,
+              program: parsedProgramSections,
+              condition: {
+                conditionText: trip.conditionText || '',
+                conditionIds: condtionIds,
+              },
+              galleryImageIds,
+              tags: trip.tags || [],
+              offerType: trip.offerType || "",
+              price: trip.price || "",
+      
+              thumbnailsBase64,
+              ...(cardThumbnailBase64 && {
+                cardThumbnailBase64,
+              }),
+            },
+          });
+      
+          toast({
+            title: "Success",
+            description: "Trip duplicated successfully.",
+          });
+      
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        } catch (error) {
+          console.error("Failed to duplicate trip:", error);
+          toast({
+            title: "Error",
+            description: "Failed to duplicate trip.",
+          });
+        }
+      };
+      
+
   const openEditModal = (trip) => {
     console.log("Trip data for editing:", trip);
     
@@ -1640,6 +1740,9 @@ setProgramSections(parsedProgramSections);
           setViewingTrip(trip);
           setIsViewModalOpen(true);
         }}
+
+        onDublicateTrip={(trip)=>duplicateTrip(trip)}
+
       />
 
 {myTrips.length === 0 && <p><NoItemsPage/></p>}
