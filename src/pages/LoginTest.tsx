@@ -59,7 +59,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
 
 
-    // Set user in context and localStorage (you can customize this)
+    // Setf user in context and localStorage (you can customize this)
     setUser({ name: username, email: "" });
     document.cookie = `userName=${encodeURIComponent(username)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure;`;
 document.cookie = `userEmail=;  path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax; Secure;`; // set empty for now
