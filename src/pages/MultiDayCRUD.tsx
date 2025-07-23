@@ -1211,17 +1211,22 @@ useEffect(()=>{
       const duplicateTrip = async (trip) => {
         try {
           // Convert images to Base64 if they exist
-          const cardThumbnailBase64 = trip.cardThumbnail
-            ? await fetchImageAsBase64(trip.cardThumbnail)
-            : null;
-      
-          const thumbnailsBase64 = trip.thumbnails?.length
-            ? await Promise.all(
-                trip.thumbnails.map((thumb) =>
-                  fetchImageAsBase64(thumb.image)
-                )
-              )
-            : [];
+        // Fix HTTP → HTTPS
+const forceHttps = (url) =>
+  url?.startsWith("http://") ? url.replace("http://", "https://") : url;
+
+const cardThumbnailBase64 = trip.cardThumbnail
+  ? await fetchImageAsBase64(forceHttps(trip.cardThumbnail))
+  : null;
+
+const thumbnailsBase64 = trip.thumbnails?.length
+  ? await Promise.all(
+      trip.thumbnails.map((thumb) =>
+        fetchImageAsBase64(forceHttps(thumb.image))
+      )
+    )
+  : [];
+
       
           const provinceIds = trip.provinces?.map(p => p.id) || [];
           const condtionIds = trip.conditions?.map(p => p.id) || [];
